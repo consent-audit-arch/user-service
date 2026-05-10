@@ -6,9 +6,9 @@ spring:
     name: user-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/user_db
-    username: user_service_user
-    password: user_service_pass
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/user_db}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -26,7 +26,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8180/realms/tcc
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/tcc}
 
 management:
   endpoints:
@@ -39,7 +39,7 @@ tcc:
     enabled: true
     opa:
       enabled: true
-      url: http://localhost:8181/v1/data/user/authz/decision
+      url: ${OPA_URL:http://localhost:8181/v1/data/user/authz/decision}
       timeout: 2s
     headers:
       purpose: X-Purpose
