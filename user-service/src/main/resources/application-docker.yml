@@ -26,4 +26,5 @@ tcc:
     headers:
       purpose: X-Purpose
       data-subject-id: X-Data-Subject-Id
+      data-category: X-Data-Category
       correlation-id: X-Correlation-Id

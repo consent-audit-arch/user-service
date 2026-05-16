@@ -27,6 +27,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/tcc}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8180/realms/tcc/protocol/openid-connect/certs}
 
 management:
   endpoints:
@@ -44,4 +45,5 @@ tcc:
     headers:
       purpose: X-Purpose
       data-subject-id: X-Data-Subject-Id
+      data-category: X-Data-Category
       correlation-id: X-Correlation-Id
