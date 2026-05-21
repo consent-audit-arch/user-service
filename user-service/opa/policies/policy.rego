@@ -89,16 +89,17 @@ consent_response := http.send({
 
 consent_data := consent_response.body.authorizations if { not is_batch_request }
 
-decision_has_active_consent if {
+decision_has_active_consent(category) if {
     not is_batch_request
     token_response.status_code == 200
     consent_response.status_code == 200
     some auth in consent_data
     auth.purpose == input.purpose
-    auth.dataCategory == "PERSONAL_DATA"
+    auth.dataCategory == category
     auth.status == "GRANTED"
 }
 
+# ── USER_PROFILE / PERSONAL_DATA ──
 decision := {"allow": true, "reason": "Access granted"} if {
     not is_batch_request
     "USER_READ" in input.caller.roles
@@ -109,7 +110,35 @@ decision := {"allow": true, "reason": "Access granted"} if {
     input.resource == "USER_PROFILE"
     input.action == "READ"
     "PERSONAL_DATA" in input.dataCategories
-    decision_has_active_consent
+    decision_has_active_consent("PERSONAL_DATA")
+}
+
+# ── USER_CONTRACT / CONTRACT_DATA ──
+decision := {"allow": true, "reason": "Access granted"} if {
+    not is_batch_request
+    "USER_READ" in input.caller.roles
+    input.caller.clientId in allowed_callers
+    input.purpose in allowed_purposes
+    input.dataSubjectId != null
+    input.dataSubjectId != ""
+    input.resource == "USER_CONTRACT"
+    input.action == "READ"
+    "CONTRACT_DATA" in input.dataCategories
+    decision_has_active_consent("CONTRACT_DATA")
+}
+
+# ── USER_USAGE / USAGE_DATA ──
+decision := {"allow": true, "reason": "Access granted"} if {
+    not is_batch_request
+    "USER_READ" in input.caller.roles
+    input.caller.clientId in allowed_callers
+    input.purpose in allowed_purposes
+    input.dataSubjectId != null
+    input.dataSubjectId != ""
+    input.resource == "USER_USAGE"
+    input.action == "READ"
+    "USAGE_DATA" in input.dataCategories
+    decision_has_active_consent("USAGE_DATA")
 }
 
 # ──────────────────────────────────────
@@ -133,15 +162,16 @@ decision := {"allow": false, "reason": "Purpose not allowed"} if {
     not input.purpose in allowed_purposes
 }
 
-decision := {"allow": false, "reason": "Active consent not found for PERSONAL_DATA"} if {
+decision := {"allow": false, "reason": "Active consent not found"} if {
     not is_batch_request
     "USER_READ" in input.caller.roles
     input.caller.clientId in allowed_callers
     input.purpose in allowed_purposes
     input.dataSubjectId != null
     input.dataSubjectId != ""
-    input.resource == "USER_PROFILE"
+    input.resource in {"USER_PROFILE", "USER_CONTRACT", "USER_USAGE"}
     input.action == "READ"
-    "PERSONAL_DATA" in input.dataCategories
-    not decision_has_active_consent
+    not decision_has_active_consent("PERSONAL_DATA")
+    not decision_has_active_consent("CONTRACT_DATA")
+    not decision_has_active_consent("USAGE_DATA")
 }

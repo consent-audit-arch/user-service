@@ -2,9 +2,13 @@ package com.tcc.user_service.interfaces.rest;
 
 import com.tcc.security.annotation.RequiresConsent;
 import com.tcc.user_service.application.dto.CreateUserCommand;
+import com.tcc.user_service.application.dto.UserContractProfileDTO;
 import com.tcc.user_service.application.dto.UserResponse;
+import com.tcc.user_service.application.dto.UserUsageProfileDTO;
 import com.tcc.user_service.application.dto.batch.BatchUserRequest;
 import com.tcc.user_service.application.dto.batch.BatchUserResponse;
+import com.tcc.user_service.application.service.ContractApplicationService;
+import com.tcc.user_service.application.service.UsageApplicationService;
 import com.tcc.user_service.application.service.UserApplicationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,9 +22,15 @@ import java.util.List;
 public class UserController {
 
     private final UserApplicationService userService;
+    private final ContractApplicationService contractService;
+    private final UsageApplicationService usageService;
 
-    public UserController(UserApplicationService userService) {
+    public UserController(UserApplicationService userService,
+                          ContractApplicationService contractService,
+                          UsageApplicationService usageService) {
         this.userService = userService;
+        this.contractService = contractService;
+        this.usageService = usageService;
     }
 
     @PostMapping
@@ -53,5 +63,19 @@ public class UserController {
     public ResponseEntity<BatchUserResponse> findBatch(@Valid @RequestBody BatchUserRequest request) {
         BatchUserResponse response = userService.findBatch(request.getIds());
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/contract")
+    @RequiresConsent(resource = "USER_CONTRACT", action = "READ",
+            dataCategories = {"CONTRACT_DATA"})
+    public ResponseEntity<List<UserContractProfileDTO>> findContracts(@PathVariable Long id) {
+        return ResponseEntity.ok(contractService.findByUserId(id));
+    }
+
+    @GetMapping("/{id}/usage")
+    @RequiresConsent(resource = "USER_USAGE", action = "READ",
+            dataCategories = {"USAGE_DATA"})
+    public ResponseEntity<List<UserUsageProfileDTO>> findUsage(@PathVariable Long id) {
+        return ResponseEntity.ok(usageService.findByUserId(id));
     }
 }
