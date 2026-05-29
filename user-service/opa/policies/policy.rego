@@ -5,8 +5,6 @@ import future.keywords.if
 
 default decision := {"allow": false, "reason": "Denied by default"}
 
-allowed_purposes := {"BILLING", "ANALYTICS"}
-
 token_uri := opa.runtime().env.OPA_KEYCLOAK_TOKEN_URI
 client_id := opa.runtime().env.OPA_CLIENT_ID
 client_secret := opa.runtime().env.OPA_CLIENT_SECRET
@@ -57,14 +55,13 @@ decision := {"allow": true, "reason": "Batch partial success", "decisions": deci
     is_batch_request
     count(authorized_titulars) > 0
     "USER_READ" in input.caller.roles
-    input.purpose in allowed_purposes
 }
 
 decision := {"allow": false, "reason": "All titulars denied in batch", "decisions": decisions} if {
     is_batch_request
     count(authorized_titulars) == 0
     "USER_READ" in input.caller.roles
-    input.purpose in allowed_purposes
+    
 }
 
 # ──────────────────────────────────────
@@ -102,7 +99,6 @@ decision_has_active_consent(category) if {
 decision := {"allow": true, "reason": "Access granted"} if {
     not is_batch_request
     "USER_READ" in input.caller.roles
-    input.purpose in allowed_purposes
     input.dataSubjectId != null
     input.dataSubjectId != ""
     input.resource == "USER_PROFILE"
@@ -115,7 +111,6 @@ decision := {"allow": true, "reason": "Access granted"} if {
 decision := {"allow": true, "reason": "Access granted"} if {
     not is_batch_request
     "USER_READ" in input.caller.roles
-    input.purpose in allowed_purposes
     input.dataSubjectId != null
     input.dataSubjectId != ""
     input.resource == "USER_CONTRACT"
@@ -128,7 +123,7 @@ decision := {"allow": true, "reason": "Access granted"} if {
 decision := {"allow": true, "reason": "Access granted"} if {
     not is_batch_request
     "USER_READ" in input.caller.roles
-    input.purpose in allowed_purposes
+    
     input.dataSubjectId != null
     input.dataSubjectId != ""
     input.resource == "USER_USAGE"
@@ -145,16 +140,10 @@ decision := {"allow": false, "reason": "Caller does not have USER_READ role"} if
     not ("USER_READ" in input.caller.roles)
 }
 
-decision := {"allow": false, "reason": "Purpose not allowed"} if {
-    not is_batch_request
-    "USER_READ" in input.caller.roles
-    not input.purpose in allowed_purposes
-}
-
 decision := {"allow": false, "reason": "Active consent not found"} if {
     not is_batch_request
     "USER_READ" in input.caller.roles
-    input.purpose in allowed_purposes
+    
     input.dataSubjectId != null
     input.dataSubjectId != ""
     input.resource in {"USER_PROFILE", "USER_CONTRACT", "USER_USAGE"}
