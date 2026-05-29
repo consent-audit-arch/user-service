@@ -45,7 +45,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @RequiresConsent(resource = "USER_PROFILE", action = "READ")
+    @RequiresConsent(resource = "USER_PROFILE", action = "READ",
+            dataSubjectIdParam = "id")
     public ResponseEntity<UserResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findById(id));
     }
@@ -59,7 +60,8 @@ public class UserController {
 
     @PostMapping("/batch")
     @RequiresConsent(resource = "USER_PROFILE", action = "READ",
-            dataCategories = {"PERSONAL_DATA"})
+            dataCategories = {"PERSONAL_DATA"},
+            dataSubjectIdsParam = "request.ids")
     public ResponseEntity<BatchUserResponse> findBatch(@Valid @RequestBody BatchUserRequest request) {
         BatchUserResponse response = userService.findBatch(request.getIds());
         return ResponseEntity.ok(response);
@@ -67,14 +69,16 @@ public class UserController {
 
     @GetMapping("/{id}/contract")
     @RequiresConsent(resource = "USER_CONTRACT", action = "READ",
-            dataCategories = {"CONTRACT_DATA"})
+            dataCategories = {"CONTRACT_DATA"},
+            dataSubjectIdParam = "id")
     public ResponseEntity<List<UserContractProfileDTO>> findContracts(@PathVariable Long id) {
         return ResponseEntity.ok(contractService.findByUserId(id));
     }
 
     @GetMapping("/{id}/usage")
     @RequiresConsent(resource = "USER_USAGE", action = "READ",
-            dataCategories = {"USAGE_DATA"})
+            dataCategories = {"USAGE_DATA"},
+            dataSubjectIdParam = "id")
     public ResponseEntity<List<UserUsageProfileDTO>> findUsage(@PathVariable Long id) {
         return ResponseEntity.ok(usageService.findByUserId(id));
     }
