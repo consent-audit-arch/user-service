@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface SpringDataUsageRecordJpaRepository extends JpaRepository<UsageRecordJpaEntity, Long> {
     List<UsageRecordJpaEntity> findByUserId(Long userId);
+    List<UsageRecordJpaEntity> findByUserIdIn(List<Long> userIds);
 }

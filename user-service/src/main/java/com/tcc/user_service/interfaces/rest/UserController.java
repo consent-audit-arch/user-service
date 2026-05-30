@@ -5,6 +5,7 @@ import com.tcc.user_service.application.dto.CreateUserCommand;
 import com.tcc.user_service.application.dto.UserContractProfileDTO;
 import com.tcc.user_service.application.dto.UserResponse;
 import com.tcc.user_service.application.dto.UserUsageProfileDTO;
+import com.tcc.user_service.application.dto.batch.BatchUsageResponse;
 import com.tcc.user_service.application.dto.batch.BatchUserRequest;
 import com.tcc.user_service.application.dto.batch.BatchUserResponse;
 import com.tcc.user_service.application.service.ContractApplicationService;
@@ -81,5 +82,14 @@ public class UserController {
             dataSubjectIdParam = "id")
     public ResponseEntity<List<UserUsageProfileDTO>> findUsage(@PathVariable Long id) {
         return ResponseEntity.ok(usageService.findByUserId(id));
+    }
+
+    @PostMapping("/batch/usage")
+    @RequiresConsent(resource = "USER_USAGE", action = "READ",
+            dataCategories = {"USAGE_DATA"},
+            dataSubjectIdsParam = "request.ids")
+    public ResponseEntity<BatchUsageResponse> findUsageBatch(@Valid @RequestBody BatchUserRequest request) {
+        BatchUsageResponse response = usageService.findBatch(request.getIds());
+        return ResponseEntity.ok(response);
     }
 }

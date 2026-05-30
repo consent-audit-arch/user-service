@@ -23,8 +23,6 @@ tcc:
       enabled: true
       url: ${OPA_URL:http://localhost:8181/v1/data/user/authz/decision}
       timeout: 2s
-    pip:
-      url: ${TCC_SECURITY_PIP_URL:http://consent-query-service:8080/api/v1/consent}
     headers:
       purpose: X-Purpose
       data-subject-id: X-Data-Subject-Id
