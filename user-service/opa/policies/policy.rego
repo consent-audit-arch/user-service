@@ -29,21 +29,41 @@ token_response := http.send({
 access_token := token_response.body.access_token
 
 # ──────────────────────────────────────
-# BATCH REQUEST via PIP data
+# BATCH REQUEST via consent-query-service (PDP calls PIP)
 # ──────────────────────────────────────
 is_batch_request if {
     count(input.dataSubjectIds) > 0
-    input.pipData != null
-    count(input.pipData) > 0
+}
+
+batch_consent_response := http.send({
+    "method": "POST",
+    "url": "http://consent-query-service:8080/api/v1/consent/batch/authorizations",
+    "headers": {
+        "Authorization": concat(" ", ["Bearer", access_token]),
+        "Content-Type": "application/json"
+    },
+    "raw_body": json.marshal({
+        "titularIds": input.dataSubjectIds,
+        "dataCategory": input.dataCategories[0],
+        "purpose": input.purpose
+    }),
+    "timeout": "5s",
+    "raise_error": false
+}) if { is_batch_request }
+
+batch_results := batch_consent_response.body.results if {
+    is_batch_request
+    batch_consent_response.status_code == 200
+    batch_consent_response.body.results != null
 }
 
 authorized_titulars := {r.titularId |
-    r := input.pipData[_]
+    r := batch_results[_]
     r.authorized == true
 }
 
 decisions := [d |
-    r := input.pipData[_]
+    r := batch_results[_]
     d := {
         "titularId": r.titularId,
         "allow": r.authorized,
@@ -61,11 +81,10 @@ decision := {"allow": false, "reason": "All titulars denied in batch", "decision
     is_batch_request
     count(authorized_titulars) == 0
     "USER_READ" in input.caller.roles
-    
 }
 
 # ──────────────────────────────────────
-# SINGLE REQUEST via consent-query-service
+# SINGLE REQUEST via consent-query-service (PDP calls PIP)
 # ──────────────────────────────────────
 consent_response := http.send({
     "method": "GET",
