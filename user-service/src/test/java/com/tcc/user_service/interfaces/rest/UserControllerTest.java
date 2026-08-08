@@ -6,6 +6,9 @@ import com.tcc.user_service.application.dto.batch.UserUsageBatchRecord;
 import com.tcc.user_service.application.service.ContractApplicationService;
 import com.tcc.user_service.application.service.UsageApplicationService;
 import com.tcc.user_service.application.service.UserApplicationService;
+import com.tcc.user_service.application.service.UserApplicationService.DeactivateUserResponse;
+import com.tcc.user_service.domain.exception.UserAlreadyDeactivatedException;
+import com.tcc.user_service.domain.exception.UserNotFoundException;
 import com.tcc.user_service.infrastructure.persistence.mapper.UserPersistenceMapper;
 import com.tcc.user_service.infrastructure.persistence.repository.SpringDataUserJpaRepository;
 import org.junit.jupiter.api.Test;
@@ -80,5 +83,37 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void deactivate_shouldReturn200WhenSuccessful() throws Exception {
+        when(userService.deactivate(1L))
+                .thenReturn(new DeactivateUserResponse(1L, "DEACTIVATED", 3));
+
+        mockMvc.perform(post("/api/v1/users/1/deactivate"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(1))
+                .andExpect(jsonPath("$.status").value("DEACTIVATED"))
+                .andExpect(jsonPath("$.consentsRevoked").value(3));
+    }
+
+    @Test
+    void deactivate_shouldReturn404WhenUserNotFound() throws Exception {
+        when(userService.deactivate(999L))
+                .thenThrow(new UserNotFoundException(999L));
+
+        mockMvc.perform(post("/api/v1/users/999/deactivate"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("not_found"));
+    }
+
+    @Test
+    void deactivate_shouldReturn409WhenAlreadyDeactivated() throws Exception {
+        when(userService.deactivate(1L))
+                .thenThrow(new UserAlreadyDeactivatedException(1L));
+
+        mockMvc.perform(post("/api/v1/users/1/deactivate"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("conflict"));
     }
 }

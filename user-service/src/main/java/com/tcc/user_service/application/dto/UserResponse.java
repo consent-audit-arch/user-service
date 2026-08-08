@@ -10,6 +10,7 @@ public class UserResponse {
     private String documentNumber;
     private LocalDate birthDate;
     private Instant createdAt;
+    private boolean active;
 
     public Long getId() {
         return id;
@@ -57,5 +58,13 @@ public class UserResponse {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

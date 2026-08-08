@@ -1,6 +1,7 @@
 package com.tcc.user_service.interfaces.rest;
 
 import com.tcc.security.exception.DataAccessDeniedException;
+import com.tcc.user_service.domain.exception.UserAlreadyDeactivatedException;
 import com.tcc.user_service.domain.exception.UserNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
@@ -20,6 +21,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleUserNotFound(UserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", "not_found", "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(UserAlreadyDeactivatedException.class)
+    public ResponseEntity<Map<String, String>> handleUserAlreadyDeactivated(UserAlreadyDeactivatedException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "conflict", "message", ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -15,6 +15,7 @@ public class UserPersistenceMapper {
         entity.setDocumentNumber(user.getDocumentNumber());
         entity.setBirthDate(user.getBirthDate());
         entity.setCreatedAt(user.getCreatedAt());
+        entity.setActive(user.isActive());
         return entity;
     }
 
@@ -26,6 +27,7 @@ public class UserPersistenceMapper {
         user.setDocumentNumber(entity.getDocumentNumber());
         user.setBirthDate(entity.getBirthDate());
         user.setCreatedAt(entity.getCreatedAt());
+        user.setActive(entity.getActive());
         return user;
     }
 }

@@ -11,6 +11,7 @@ import com.tcc.user_service.application.dto.batch.BatchUserResponse;
 import com.tcc.user_service.application.service.ContractApplicationService;
 import com.tcc.user_service.application.service.UsageApplicationService;
 import com.tcc.user_service.application.service.UserApplicationService;
+import com.tcc.user_service.application.service.UserApplicationService.DeactivateUserResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,9 +48,16 @@ public class UserController {
 
     @GetMapping("/{id}")
     @RequiresConsent(resource = "USER_PROFILE", action = "READ",
+            dataCategories = {"PERSONAL_DATA"},
             dataSubjectIdParam = "id")
     public ResponseEntity<UserResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findById(id));
+    }
+
+    @PostMapping("/{id}/deactivate")
+    public ResponseEntity<DeactivateUserResponse> deactivate(@PathVariable Long id) {
+        DeactivateUserResponse response = userService.deactivate(id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}/exists")

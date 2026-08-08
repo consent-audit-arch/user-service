@@ -29,6 +29,9 @@ public class UserJpaEntity {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    @Column(nullable = false)
+    private Boolean active = true;
+
     public Long getId() {
         return id;
     }
@@ -75,5 +78,13 @@ public class UserJpaEntity {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 }

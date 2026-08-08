@@ -4,9 +4,11 @@ import com.tcc.user_service.application.dto.CreateUserCommand;
 import com.tcc.user_service.application.dto.UserResponse;
 import com.tcc.user_service.application.dto.batch.BatchUserResponse;
 import com.tcc.user_service.application.dto.batch.DeniedUser;
+import com.tcc.user_service.domain.exception.UserAlreadyDeactivatedException;
 import com.tcc.user_service.domain.exception.UserNotFoundException;
 import com.tcc.user_service.domain.model.User;
 import com.tcc.user_service.domain.repository.UserRepository;
+import com.tcc.user_service.infrastructure.client.ConsentCommandClient;
 import com.tcc.security.aspect.ConsentAuthorizationAspect;
 import com.tcc.security.pip.PipTitularResult;
 import org.springframework.stereotype.Service;
@@ -22,9 +24,12 @@ import java.util.stream.Collectors;
 public class UserApplicationService {
 
     private final UserRepository userRepository;
+    private final ConsentCommandClient consentCommandClient;
 
-    public UserApplicationService(UserRepository userRepository) {
+    public UserApplicationService(UserRepository userRepository,
+                                   ConsentCommandClient consentCommandClient) {
         this.userRepository = userRepository;
+        this.consentCommandClient = consentCommandClient;
     }
 
     public UserResponse create(CreateUserCommand command) {
@@ -57,6 +62,24 @@ public class UserApplicationService {
         return toResponse(user);
     }
 
+    @Transactional
+    public DeactivateUserResponse deactivate(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        if (!user.isActive()) {
+            throw new UserAlreadyDeactivatedException(userId);
+        }
+
+        ConsentCommandClient.DeactivateResult result = consentCommandClient.deactivate(
+                userId, "SYSTEM", 0L);
+
+        user.setActive(false);
+        userRepository.save(user);
+
+        return new DeactivateUserResponse(userId, "DEACTIVATED", result.consentsRevoked());
+    }
+
     @Transactional(readOnly = true)
     public BatchUserResponse findBatch(List<Long> requestedIds) {
         List<PipTitularResult> decisions = ConsentAuthorizationAspect.getDecisionsFromRequest();
@@ -84,6 +107,8 @@ public class UserApplicationService {
         return new BatchUserResponse(data, denied);
     }
 
+    public record DeactivateUserResponse(Long userId, String status, int consentsRevoked) {}
+
     private UserResponse toResponse(User user) {
         UserResponse response = new UserResponse();
         response.setId(user.getId());
@@ -92,6 +117,7 @@ public class UserApplicationService {
         response.setDocumentNumber(user.getDocumentNumber());
         response.setBirthDate(user.getBirthDate());
         response.setCreatedAt(user.getCreatedAt());
+        response.setActive(user.isActive());
         return response;
     }
 }

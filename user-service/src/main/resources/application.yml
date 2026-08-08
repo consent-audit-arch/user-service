@@ -35,6 +35,13 @@ management:
       exposure:
         include: health,info
 
+consent-command:
+  url: ${CONSENT_COMMAND_URL:http://localhost:8082}
+keycloak:
+  token-uri: ${KEYCLOAK_TOKEN_URI:http://localhost:8180/realms/tcc/protocol/openid-connect/token}
+  client-id: user-service
+  client-secret: ${USER_SERVICE_CLIENT_SECRET}
+
 tcc:
   security:
     enabled: true
@@ -45,5 +52,5 @@ tcc:
     headers:
       purpose: X-Purpose
       data-subject-id: X-Data-Subject-Id
-      data-category: X-Data-Category
+      data-categories: X-Data-Categories
       correlation-id: X-Correlation-Id

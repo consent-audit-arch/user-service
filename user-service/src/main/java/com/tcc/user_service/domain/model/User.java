@@ -10,6 +10,7 @@ public class User {
     private String documentNumber;
     private LocalDate birthDate;
     private Instant createdAt;
+    private boolean active = true;
 
     public User() {
     }
@@ -20,6 +21,7 @@ public class User {
         this.documentNumber = documentNumber;
         this.birthDate = birthDate;
         this.createdAt = Instant.now();
+        this.active = true;
     }
 
     public Long getId() {
@@ -68,5 +70,13 @@ public class User {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }
